@@ -1,6 +1,6 @@
 # Boxcutter
 
-Boxcutter is a powerful web development tool designed for handling PDF documents with ease. It integrates seamlessly with React and Tailwind CSS to create highly responsive web applications.
+Boxcutter is a powerful web development tool designed for snipping PDF documents with ease. It integrates seamlessly with React and Tailwind CSS to create highly responsive web applications.
 
 ## Key Features
 
