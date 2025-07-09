@@ -15,4 +15,20 @@ export default defineConfig({
             "@": path.resolve(__dirname, "./src"),
         },
     },
+    build: {
+        lib: {
+            entry: "./main.jsx",
+            name: "Boxcutter",
+            fileName: (format) => `boxcutter.${format}.js`,
+        },
+        rollupOptions: {
+            external: ["react", "react-dom"],
+            output: {
+                globals: {
+                    react: "React",
+                    "react-dom": "ReactDOM",
+                },
+            },
+        },
+    },
 });
