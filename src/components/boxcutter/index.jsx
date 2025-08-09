@@ -423,6 +423,10 @@ export default function BoxCutter({
         if (!deepEquals(toc, contents)) onTOCChange(contents);
     }, [contents]);
 
+    useEffect(() => {
+        onPageChange(currentPage);
+    }, [currentPage]);
+
     let handleExtractOutline = async (maxDepth = 1) => {
         const outline = await pdfData.getOutline();
         if (!outline) return [];

@@ -1,18 +1,23 @@
 {
-    "name": "boxcutter",
-    "version": "0.0.1",
+    "name": "@tamatashwin/boxcutter",
+    "version": "0.0.6",
     "type": "module",
     "main": "dist/boxcutter.umd.js",
     "module": "dist/boxcutter.es.js",
+    "types": "./index.d.ts",
     "exports": {
         ".": {
             "import": "./dist/boxcutter.es.js",
             "require": "./dist/boxcutter.umd.js"
         },
+        "./client": {
+            "import": "./dist/client.js"
+        },
         "./styles.css": "./dist/boxcutter.css"
     },
     "files": [
-        "dist"
+        "dist",
+        "./index.d.ts"
     ],
     "scripts": {
         "dev": "vite",

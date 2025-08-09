@@ -29,7 +29,8 @@ Here's a basic example of how you might use the Boxcutter component in a React a
 
 ```javascript
 import React, { useState, useEffect } from "react";
-import { BoxCutter } from "boxcutter";
+import { BoxCutter } from "@tamatashwin/boxcutter";
+import "@tamatashwin/boxcutter/styles.css"
 
 function App() {
   let [pdf, setPdf] = useState(null);
