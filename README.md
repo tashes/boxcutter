@@ -63,6 +63,48 @@ function App() {
 export default App;
 ```
 
+## Next.js (Client Components)
+
+If you use Next.js (App Router), import the client entry so the component renders only on the client and avoids SSR-only errors like "DOMMatrix is not defined":
+
+```tsx
+// app/(any)/page.tsx or a Client Component in your tree
+"use client";
+
+import { useState } from "react";
+import { BoxCutter } from "@tamatashwin/boxcutter/client";
+import "@tamatashwin/boxcutter/styles.css";
+
+export default function Page() {
+  const [snippets, setSnippets] = useState([]);
+  const [toc, setToc] = useState([]);
+
+  return (
+    <BoxCutter
+      pdf={null}
+      snippets={snippets}
+      onSnippetsChange={setSnippets}
+      toc={toc}
+      onTOCChange={setToc}
+    />
+  );
+}
+```
+
+Notes:
+- Import from `@tamatashwin/boxcutter/client` (which contains a `"use client"` directive) to ensure client-side rendering.
+- Do not import `@tamatashwin/boxcutter` directly from a Server Component; that can cause SSR to evaluate DOM APIs and produce errors like `DOMMatrix is not defined`.
+- Alternative: you can also dynamically import with SSR disabled if needed:
+
+```tsx
+import dynamic from "next/dynamic";
+
+const BoxCutter = dynamic(
+  () => import("@tamatashwin/boxcutter/client").then((m) => m.BoxCutter),
+  { ssr: false }
+);
+```
+
 ## License
 
 Boxcutter is licensed under the MIT License. See the LICENSE file for more details.
