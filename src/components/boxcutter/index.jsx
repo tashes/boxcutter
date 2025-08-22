@@ -639,7 +639,7 @@ export default function BoxCutter({
             const currentSnips = controlledSnippets.filter(
                 (s) => s.pageNumber === currentPage,
             );
-            currentSnips.forEach((s, i) => {
+            currentSnips.forEach((s) => {
                 const x1 = s.x;
                 const y1 = s.y;
                 const x2 = s.x + s.width;

@@ -1,4 +1,4 @@
-import react, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 import BoxCutter from "./components/boxcutter";
 
