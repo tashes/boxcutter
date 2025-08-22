@@ -42,7 +42,9 @@ export default function BoxCutter({
     const overlayRef = useRef(null);
 
     const [pdfData, setPdfData] = useState(pdf);
-    const [snips, setSnips] = useState(snippets);
+    // Use controlled snippets from props; default to [] if undefined/null
+    const controlledSnippets = Array.isArray(snippets) ? snippets : [];
+    // Local TOC state (uncontrolled); sync outward via onTOCChange
     const [contents, setContents] = useState(toc);
     const [isContentsOpen, setIsContentsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -81,7 +83,9 @@ export default function BoxCutter({
         );
 
         // Draw existing snippets
-        const pageSnippets = snips.filter((s) => s.pageNumber === currentPage);
+        const pageSnippets = controlledSnippets.filter(
+            (s) => s.pageNumber === currentPage,
+        );
         pageSnippets.forEach((snippet, index) => {
             const sx = snippet.x * scale;
             const sy = snippet.y * scale;
@@ -178,7 +182,7 @@ export default function BoxCutter({
             overlayContext.fillRect(x, y, width, height);
         }
     }, [
-        snips,
+        controlledSnippets,
         currentPage,
         selection,
         multiselection,
@@ -227,7 +231,7 @@ export default function BoxCutter({
             image: snippetCanvas.toDataURL("image/png"),
         };
 
-        setSnips([...snips, newSnippet]);
+        onSnippetsChange([...controlledSnippets, newSnippet]);
     };
 
     let extractCombinedSnippet = async () => {
@@ -294,7 +298,7 @@ export default function BoxCutter({
             image: snippetCanvas.toDataURL("image/png"),
         };
 
-        setSnips([...snips, newSnippet]);
+        onSnippetsChange([...controlledSnippets, newSnippet]);
 
         setMultiselection({
             selections: [],
@@ -390,7 +394,7 @@ export default function BoxCutter({
 
         return () => cancelAnimationFrame(animationFrameId);
     }, [
-        snips,
+        controlledSnippets,
         currentPage,
         selection,
         multiselection,
@@ -399,7 +403,7 @@ export default function BoxCutter({
     ]);
 
     useEffect(() => {
-        let handleKeyUp = (evt) => {
+        let handleKeyUp = () => {
             if (
                 multiselection.isActive === true &&
                 multiselection.selections.length > 0
@@ -415,9 +419,7 @@ export default function BoxCutter({
         };
     }, [multiselection]);
 
-    useEffect(() => {
-        if (!deepEquals(snippets, snips)) onSnippetsChange(snips);
-    }, [snips]);
+    // Snippets are controlled; no internal state sync needed.
 
     useEffect(() => {
         if (!deepEquals(toc, contents)) onTOCChange(contents);
@@ -634,7 +636,7 @@ export default function BoxCutter({
 
         // Hover over snippets (PDF-space)
         if (!found) {
-            const currentSnips = snips.filter(
+            const currentSnips = controlledSnippets.filter(
                 (s) => s.pageNumber === currentPage,
             );
             currentSnips.forEach((s, i) => {
@@ -677,13 +679,13 @@ export default function BoxCutter({
             if (Math.sqrt(dx * dx + dy * dy) <= BTNRADIUS) {
                 if (hoveredSelection.type === "single") {
                     // Delete snippet
-                    const snipIndex = snips.findIndex(
+                    const snipIndex = controlledSnippets.findIndex(
                         (s) => s.id === hoveredSelection.id,
                     );
                     if (snipIndex !== -1) {
-                        setSnips([
-                            ...snips.slice(0, snipIndex),
-                            ...snips.slice(snipIndex + 1),
+                        onSnippetsChange([
+                            ...controlledSnippets.slice(0, snipIndex),
+                            ...controlledSnippets.slice(snipIndex + 1),
                         ]);
                     }
                 } else if (hoveredSelection.type === "multi") {
@@ -773,7 +775,10 @@ export default function BoxCutter({
     };
 
     let handleDeleteSnippet = (index) => {
-        setSnips([...snips.slice(0, index), ...snips.slice(index + 1)]);
+        onSnippetsChange([
+            ...controlledSnippets.slice(0, index),
+            ...controlledSnippets.slice(index + 1),
+        ]);
     };
 
     let item = null;
@@ -835,7 +840,7 @@ export default function BoxCutter({
         </div>
     ));
 
-    let renderedSnips = snips.map((s, index) => {
+    let renderedSnips = controlledSnippets.map((s, index) => {
         const isCurrentPage = s.pageNumber === currentPage;
         return (
             <div
@@ -908,7 +913,7 @@ export default function BoxCutter({
                                             variant="default"
                                             className="absolute top-0 left-full -translate-x-full h-5 min-w-5 rounded-full px-1 font-mono tabular-nums text-xs"
                                         >
-                                            {snips.length}
+                                            {controlledSnippets.length}
                                         </Badge>
                                     </Button>
                                 )}
