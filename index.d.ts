@@ -25,9 +25,6 @@ export interface Snippet {
     height: number;
     /** Data URL of the PNG image (e.g. "data:image/png;base64,..."). */
     image: string;
-    /** Optional extras you may add later. */
-    note?: string;
-    meta?: Record<string, unknown>;
 }
 
 /** A simple, flat TOC entry (matches what `handleExtractOutline` produces). */
