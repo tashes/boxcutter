@@ -64,6 +64,27 @@ export interface BoxCutterProps {
 
     /** Show/hide the side "Snippets" drawer. Defaults to true. */
     showSnippetsCollection?: boolean;
+
+    /**
+     * Called once when the first page is rendered and the component
+     * is ready for interaction. Fires again if a new `pdf` is provided
+     * and the first page of that document finishes rendering.
+     */
+    onReady?: (info: {
+        /** Total number of pages in the document. */
+        totalPages: number;
+        /** Current 1-based page number being displayed. */
+        currentPage: number;
+        /** Render scale factor applied to the page. */
+        scale: number;
+        /** Canvas pixel dimensions for the rendered page. */
+        pageSize: { width: number; height: number };
+        /** Underlying canvases used for content and overlay. */
+        canvas: HTMLCanvasElement | null;
+        overlay: HTMLCanvasElement | null;
+        /** Helper to jump to a specific page (1-based, clamped). */
+        jumpToPage: (page: number) => void;
+    }) => void;
 }
 
 /** Named export, as in: `import { BoxCutter } from "@tamatashwin/boxcutter"` */

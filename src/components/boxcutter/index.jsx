@@ -38,6 +38,7 @@ export default function BoxCutter({
     onTOCChange = () => {},
     onPageChange = () => {},
     showSnippetsCollection = true,
+    onReady = undefined,
 }) {
     const canvasRef = useRef(null);
     const overlayRef = useRef(null);
@@ -68,6 +69,8 @@ export default function BoxCutter({
     });
     const [hoveredSelection, setHoveredSelection] = useState(null);
     const [isSnippetsOpen, setIsSnippetsOpen] = useState(false);
+    // Track whether we've informed the parent that we're ready for interaction
+    const hasAnnouncedReady = useRef(false);
 
     let renderSnippets = useCallback(() => {
         if (!overlayRef.current) return;
@@ -335,6 +338,8 @@ export default function BoxCutter({
             }
         };
 
+        // Reset the ready flag when a new PDF is provided
+        hasAnnouncedReady.current = false;
         loadPDF();
     }, [pdf]);
 
@@ -376,6 +381,38 @@ export default function BoxCutter({
                 renderTask = page.render(renderContext);
                 await renderTask.promise;
                 renderSnippets();
+
+                // Announce readiness once the first page has finished rendering
+                if (!hasAnnouncedReady.current) {
+                    hasAnnouncedReady.current = true;
+                    if (typeof onReady === "function") {
+                        // Defer to next frame to ensure DOM is painted
+                        const canvasEl = canvasRef.current;
+                        const overlayEl = overlayRef.current;
+                        const info = {
+                            totalPages,
+                            currentPage,
+                            scale,
+                            pageSize: {
+                                width: canvas.width,
+                                height: canvas.height,
+                            },
+                            canvas: canvasEl,
+                            overlay: overlayEl,
+                            jumpToPage: (target) => {
+                                const toNum = (val) => {
+                                    const n = typeof val === "number" ? val : parseInt(val, 10);
+                                    return Number.isFinite(n) ? n : 1;
+                                };
+                                const t = toNum(target);
+                                if (totalPages > 0 && t >= totalPages) setCurrentPage(totalPages);
+                                else if (t <= 1) setCurrentPage(1);
+                                else setCurrentPage(t);
+                            },
+                        };
+                        requestAnimationFrame(() => onReady(info));
+                    }
+                }
             } catch (e) {
                 if (e?.name !== "RenderingCancelledException") {
                     setError(e);

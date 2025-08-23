@@ -60,6 +60,20 @@ function App() {
                         toc={toc}
                         onTOCChange={setTOC}
                         onPageChange={(p) => setPage(p)}
+                        onReady={({ totalPages, currentPage, scale, pageSize, jumpToPage }) => {
+                            // Demonstrate using onReady details and helper
+                            console.log("onReady:", {
+                                totalPages,
+                                currentPage,
+                                scale,
+                                pageSize,
+                            });
+
+                            // Example: jump to page 3 if available
+                            if (totalPages >= 3) {
+                                jumpToPage(3);
+                            }
+                        }}
                         showSnippetsCollection={true}
                     />
                 </div>

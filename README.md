@@ -54,6 +54,20 @@ function App() {
         onSnippetsChange={setSnippets}
         toc={toc}
         onTOCChange={setTOC}
+        onReady={({ totalPages, currentPage, scale, pageSize, jumpToPage }) => {
+          // Called once the first page is rendered and interactions are ready
+          console.log("Boxcutter ready:", {
+            totalPages,
+            currentPage,
+            scale,
+            pageSize,
+          });
+
+          // Example: jump to page 3 on ready
+          if (totalPages >= 3) {
+            jumpToPage(3);
+          }
+        }}
         showSnippetsCollection
       />
     </div>
