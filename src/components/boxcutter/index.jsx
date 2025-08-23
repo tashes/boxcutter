@@ -31,6 +31,7 @@ import { useCallback } from "react";
 
 export default function BoxCutter({
     pdf = null,
+    page = undefined,
     snippets = [],
     onSnippetsChange = () => {},
     toc = [],
@@ -49,6 +50,7 @@ export default function BoxCutter({
     const [isContentsOpen, setIsContentsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    // Internal page state; syncs with optional controlled `page` prop
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [scale, setScale] = useState(1.5);
@@ -323,7 +325,9 @@ export default function BoxCutter({
                 const pdfDoc = await loadingTask.promise;
                 setPdfData(pdfDoc);
                 setTotalPages(pdfDoc.numPages);
-                setCurrentPage(1);
+                // If controlled, start from provided page; otherwise default to 1
+                const initial = typeof page === "number" ? page : 1;
+                setCurrentPage(initial);
             } catch (e) {
                 setError(e);
             } finally {
@@ -428,6 +432,16 @@ export default function BoxCutter({
     useEffect(() => {
         onPageChange(currentPage);
     }, [currentPage]);
+
+    // Keep internal page in sync with controlled `page` prop
+    useEffect(() => {
+        if (typeof page === "number") {
+            // Clamp to [1, totalPages] when totalPages is known (>0)
+            const max = totalPages && totalPages > 0 ? totalPages : undefined;
+            const next = Math.max(1, max ? Math.min(page, max) : page);
+            if (next !== currentPage) setCurrentPage(next);
+        }
+    }, [page, totalPages]);
 
     let handleExtractOutline = async (maxDepth = 1) => {
         const outline = await pdfData.getOutline();
@@ -567,9 +581,14 @@ export default function BoxCutter({
     };
 
     let handleOpenPageNumber = (pageNumber) => {
-        if (pageNumber >= totalPages) setCurrentPage(totalPages);
-        else if (pageNumber <= 1) setCurrentPage(1);
-        else setCurrentPage(parseInt(pageNumber));
+        const toNum = (val) => {
+            const n = typeof val === "number" ? val : parseInt(val, 10);
+            return Number.isFinite(n) ? n : 1;
+        };
+        const target = toNum(pageNumber);
+        if (totalPages > 0 && target >= totalPages) setCurrentPage(totalPages);
+        else if (target <= 1) setCurrentPage(1);
+        else setCurrentPage(target);
     };
 
     let handlePointerDown = (evt) => {

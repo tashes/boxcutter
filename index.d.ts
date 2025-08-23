@@ -41,6 +41,13 @@ export interface BoxCutterProps {
     /** The PDF bytes (or null while loading). */
     pdf: PDFSource;
 
+    /**
+     * Current page (1-based). If provided, the component becomes controlled
+     * for page state and will render this page. If omitted, it defaults to 1
+     * and manages page internally.
+     */
+    page?: number;
+
     /** Current snippets array and change handler. */
     snippets: Snippet[];
     onSnippetsChange: (snippets: Snippet[]) => void;
@@ -49,7 +56,10 @@ export interface BoxCutterProps {
     toc: TOCItem[];
     onTOCChange: (toc: TOCItem[]) => void;
 
-    /** Not currently used internally, but exposed for consumers. */
+    /**
+     * Called whenever the current page changes (via next/prev/jump or prop).
+     * Use with `page` to fully control the page from a parent.
+     */
     onPageChange?: (pageNumber: number) => void;
 
     /** Show/hide the side "Snippets" drawer. Defaults to true. */
