@@ -1,6 +1,6 @@
 {
     "name": "@tamatashwin/boxcutter",
-    "version": "0.0.11",
+    "version": "0.0.12",
     "type": "module",
     "main": "dist/boxcutter.umd.js",
     "module": "dist/boxcutter.es.js",
@@ -23,6 +23,8 @@
         "dist",
         "client",
         "src",
+        "components",
+        "lib",
         "./index.d.ts",
         "./rsc-stub.js"
     ],
