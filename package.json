@@ -1,6 +1,6 @@
 {
     "name": "@tamatashwin/boxcutter",
-    "version": "0.0.12",
+    "version": "0.0.13",
     "type": "module",
     "main": "dist/boxcutter.umd.js",
     "module": "dist/boxcutter.es.js",
