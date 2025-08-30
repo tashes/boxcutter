@@ -9,6 +9,16 @@ function App() {
     // Controlled page state for testing parent-driven navigation
     let [page, setPage] = useState(1);
 
+    // Initialize saved theme
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem("theme");
+            if (saved === "dark") {
+                document.documentElement.classList.add("dark");
+            }
+        } catch {}
+    }, []);
+
     useEffect(() => {
         let loadPdf = async () => {
             let data = await fetch("/example.pdf").then((r) => r.bytes());
@@ -19,12 +29,29 @@ function App() {
     }, []);
 
     return (
-        <div className="w-full h-full flex flex-col gap-8 overflow-auto">
+        <div className="w-full h-full flex flex-col gap-8 overflow-auto bg-background text-foreground">
             <div className="flex flex-col gap-8 w-[90%] max-w-[1000px] mx-auto">
+                <div className="flex items-center justify-between py-4">
+                    <div className="text-sm text-muted-foreground">Demo</div>
+                    <button
+                        className="px-3 py-1 border border-input rounded bg-background hover:bg-accent hover:text-accent-foreground"
+                        onClick={() => {
+                            const root = document.documentElement;
+                            const next = root.classList.toggle("dark")
+                                ? "dark"
+                                : "light";
+                            try {
+                                localStorage.setItem("theme", next);
+                            } catch {}
+                        }}
+                    >
+                        Toggle theme
+                    </button>
+                </div>
                 {/* Simple controls to test controlled page behavior */}
                 <div className="flex items-center gap-2">
                     <button
-                        className="px-3 py-1 border rounded"
+                        className="px-3 py-1 border border-input rounded bg-background hover:bg-accent hover:text-accent-foreground"
                         onClick={() => setPage((p) => Math.max(1, p - 1))}
                     >
                         Parent Prev
@@ -33,7 +60,7 @@ function App() {
                         Page
                         <input
                             type="number"
-                            className="mx-2 w-16 border rounded px-2 py-1"
+                            className="mx-2 w-16 border border-input rounded px-2 py-1 bg-background"
                             value={page}
                             min={1}
                             onChange={(e) =>
@@ -45,7 +72,7 @@ function App() {
                         />
                     </span>
                     <button
-                        className="px-3 py-1 border rounded"
+                        className="px-3 py-1 border border-input rounded bg-background hover:bg-accent hover:text-accent-foreground"
                         onClick={() => setPage((p) => p + 1)}
                     >
                         Parent Next
@@ -79,11 +106,11 @@ function App() {
                 </div>
 
                 <div className="flex-1">
-                    <pre className="bg-gray-100 p-4 rounded overflow-auto max-h-[400px]">
+                    <pre className="bg-muted text-muted-foreground p-4 rounded overflow-auto max-h-[400px]">
                         {JSON.stringify(snippets, undefined, 4)}
                     </pre>
 
-                    <pre className="bg-gray-100 p-4 rounded overflow-auto max-h-[400px]">
+                    <pre className="bg-muted text-muted-foreground p-4 rounded overflow-auto max-h-[400px] mt-4">
                         {JSON.stringify(toc, undefined, 4)}
                     </pre>
                 </div>

@@ -14,7 +14,7 @@ import { deepEquals } from "./utils/helpers";
 
 const BTNRADIUS = 8;
 
-import { pdfjsLib } from "./utils/pdfjs";
+// pdfjs is dynamically imported in effects to avoid SSR issues
 import {
     ArrowUpRight,
     Bookmark,
@@ -318,6 +318,8 @@ export default function BoxCutter({
             setPdfData(null);
             try {
                 if (!pdf) throw new Error("No pdf");
+                // Dynamically import pdfjs to avoid SSR/window issues
+                const { pdfjsLib } = await import("./utils/pdfjs");
                 const loadingTask = pdfjsLib.getDocument({
                     data: pdf,
                     useWorkerFetch: false,
@@ -847,22 +849,19 @@ export default function BoxCutter({
     } else if (loading === true) {
         item = (
             <Card className="p-8 text-center rounded relative">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
                 <p>Loading PDF...</p>
             </Card>
         );
     } else if (error !== null) {
         item = (
-            <Card
-                className="p-8 bg-red-100 border border-red-400 text-red-700 rounded relative"
-                role="alert"
-            >
+            <Card className="p-8 border border-destructive rounded relative" role="alert">
                 <CardHeader>
                     <CardTitle>Error</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <span className="block">{error.message}</span>
-                    <pre className="pt-4 width-100 overflow-x-auto">
+                    <span className="block text-muted-foreground">{error.message}</span>
+                    <pre className="pt-4 width-100 overflow-x-auto bg-muted text-muted-foreground p-3 rounded">
                         {error.stack.split("\n").slice(1).join("\n")}
                     </pre>
                 </CardContent>
@@ -901,13 +900,13 @@ export default function BoxCutter({
         return (
             <div
                 key={s.id}
-                className={`p-3 border rounded ${isCurrentPage ? "border-blue-500 bg-blue-50" : "border-gray-200"}`}
+                className={`p-3 border rounded ${isCurrentPage ? "bg-accent text-accent-foreground border-border" : "border-border"}`}
             >
                 <div className="mb-2">
                     <img
                         src={s.image}
                         alt={`Snippet ${index + 1}`}
-                        className="w-full h-20 object-contain bg-white border rounded"
+                        className="w-full h-20 object-contain bg-card border rounded"
                     />
                 </div>
                 <div className="w-full inline-flex shadow-sm overflow-hidden rounded-md">
@@ -947,7 +946,7 @@ export default function BoxCutter({
                     item
                 ) : (
                     <div className="relative overflow-hidden">
-                        <div className="flex items-center justify-between gap-4 p-2 bg-gray-50 rounded-lg my-4">
+                        <div className="flex items-center justify-between gap-4 p-2 bg-muted rounded-lg my-4">
                             <div className="flex items-center gap-2 w-full">
                                 <Button
                                     variant="ghost"

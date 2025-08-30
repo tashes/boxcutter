@@ -79,6 +79,79 @@ export default App;
 
 ## Next.js (Client Components)
 
+Use the client-only subpath to avoid SSR DOM errors in Next.js App Router.
+
+- Import components from `@tamatashwin/boxcutter/client`.
+- Import styles from `@tamatashwin/boxcutter/styles.css`.
+- Transpile the package in `next.config.js` with `transpilePackages`.
+
+Example:
+
+```tsx
+// app/page.tsx (a Server Component)
+import "@tamatashwin/boxcutter/styles.css";
+
+export default function Page() {
+  return (
+    <div>
+      {/* Use a Client Component wrapper for BoxCutter */}
+      <ClientDemo />
+    </div>
+  );
+}
+
+// app/client-demo.tsx
+"use client";
+import { useState } from "react";
+import { BoxCutter } from "@tamatashwin/boxcutter/client";
+
+export function ClientDemo() {
+  const [pdf, setPdf] = useState<ArrayBuffer | null>(null);
+  // ...fetch and set the PDF bytes
+  return <BoxCutter pdf={pdf} snippets={[]} onSnippetsChange={()=>{}} toc={[]} onTOCChange={()=>{}} />;
+}
+```
+
+`next.config.js`:
+
+```js
+// next.config.js
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  transpilePackages: ["@tamatashwin/boxcutter"],
+};
+module.exports = nextConfig;
+```
+
+If you accidentally import `@tamatashwin/boxcutter` in a Server Component, you’ll see a helpful error directing you to use the `/client` subpath instead.
+
+## Dark Mode
+
+This package uses semantic Tailwind classes backed by CSS variables. Theme tokens are defined under `:root` and `.dark` in `@tamatashwin/boxcutter/styles.css`.
+
+- Background/foreground: `bg-background`, `text-foreground`, `border-border`.
+- Accents and subtle: `bg-accent`, `text-accent-foreground`, `bg-muted`, `text-muted-foreground`.
+- Surfaces: `bg-card`/`text-card-foreground`, `bg-popover`/`text-popover-foreground`.
+
+To toggle dark mode, add or remove the `dark` class on `document.documentElement` and persist to `localStorage`:
+
+```ts
+// Simple theme toggle
+function toggleTheme() {
+  const root = document.documentElement;
+  const next = root.classList.toggle("dark") ? "dark" : "light";
+  localStorage.setItem("theme", next);
+}
+
+// Initialize on load
+if (typeof window !== "undefined") {
+  const saved = localStorage.getItem("theme");
+  if (saved === "dark") document.documentElement.classList.add("dark");
+}
+```
+
+When styling your app around the component, avoid hardcoded grays (e.g. `text-gray-500`). Use the semantic classes listed above for consistent theming.
+
 If you use Next.js (App Router), import the client entry so the component renders only on the client and avoids SSR-only errors like "DOMMatrix is not defined":
 
 ```tsx

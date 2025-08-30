@@ -7,20 +7,24 @@
     "types": "./index.d.ts",
     "exports": {
         ".": {
+            "types": "./index.d.ts",
+            "react-server": "./rsc-stub.js",
             "import": "./dist/boxcutter.es.js",
-            "require": "./dist/boxcutter.umd.js",
-            "types": "./index.d.ts"
+            "require": "./dist/boxcutter.umd.js"
         },
         "./client": {
-            "import": "./client.js",
-            "types": "./index.d.ts"
+            "types": "./index.d.ts",
+            "import": "./client/index.js",
+            "require": "./client/index.js"
         },
         "./styles.css": "./dist/boxcutter.css"
     },
     "files": [
         "dist",
+        "client",
+        "src",
         "./index.d.ts",
-        "./client.js"
+        "./rsc-stub.js"
     ],
     "scripts": {
         "dev": "vite",
