@@ -1,8 +1,8 @@
 "use client";
 // @ts-nocheck
 
-import React, { useRef, useState, useEffect, useCallback } from "react";
 import { v4 } from "uuid";
+import React, { useRef, useState, useEffect, useMemo, useCallback } from "react";
 import {
     Card,
     CardContent,
@@ -30,6 +30,7 @@ import {
     Scissors,
     Trash,
 } from "lucide-react";
+const debug = () => {};
 
 export default function BoxCutter({
     pdf = null,
@@ -42,7 +43,6 @@ export default function BoxCutter({
     showSnippetsCollection = true,
     onReady = undefined,
 }) {
-    const debug = (..._args) => {};
     debug("mount", {
         pdfType: pdf && typeof pdf,
         pdfByteLength: pdf && (pdf.byteLength || pdf.size || pdf.length || null),
@@ -55,7 +55,10 @@ export default function BoxCutter({
 
     const [pdfData, setPdfData] = useState(pdf);
     // Use controlled snippets from props; default to [] if undefined/null
-    const controlledSnippets = Array.isArray(snippets) ? snippets : [];
+    const controlledSnippets = useMemo(
+        () => (Array.isArray(snippets) ? snippets : []),
+        [snippets],
+    );
     // Local TOC state (uncontrolled); sync outward via onTOCChange
     const [contents, setContents] = useState(toc);
     const [isContentsOpen, setIsContentsOpen] = useState(false);
@@ -251,7 +254,7 @@ export default function BoxCutter({
         onSnippetsChange([...controlledSnippets, newSnippet]);
     };
 
-    let extractCombinedSnippet = async () => {
+    let extractCombinedSnippet = useCallback(async () => {
         if (!canvasRef.current || multiselection.selections.length === 0)
             return;
 
@@ -321,7 +324,19 @@ export default function BoxCutter({
             selections: [],
             isActive: false,
         });
-    };
+    }, [
+        canvasRef,
+        multiselection,
+        currentPage,
+        scale,
+        onSnippetsChange,
+        controlledSnippets,
+    ]);
+
+    const latestPageRef = useRef(page);
+    useEffect(() => {
+        latestPageRef.current = page;
+    }, [page]);
 
     useEffect(() => {
         const loadPDF = async () => {
@@ -362,9 +377,15 @@ export default function BoxCutter({
                 setPdfData(pdfDoc);
                 setTotalPages(pdfDoc.numPages);
                 // If controlled, start from provided page; otherwise default to 1
-                const initial = typeof page === "number" ? page : 1;
-                setCurrentPage(initial);
-                debug("loadPDF: loaded", { numPages: pdfDoc.numPages, initial });
+                const initialPage =
+                    typeof latestPageRef.current === "number"
+                        ? latestPageRef.current
+                        : 1;
+                setCurrentPage(initialPage);
+                debug("loadPDF: loaded", {
+                    numPages: pdfDoc.numPages,
+                    initial: initialPage,
+                });
             } catch (e) {
                 setError(e);
                 debug("loadPDF: error", e);
@@ -434,8 +455,10 @@ export default function BoxCutter({
                 if (activeRenderTask.current?.cancel) {
                     try {
                         activeRenderTask.current.cancel();
-                        await activeRenderTask.current.promise.catch(() => {});
-                    } catch {}
+                        await activeRenderTask.current.promise.catch(() => null);
+                    } catch (cancelError) {
+                        debug("render: cancel cleanup error", cancelError);
+                    }
                 }
 
                 const task = page.render(renderContext);
@@ -496,10 +519,12 @@ export default function BoxCutter({
             if (activeRenderTask.current?.cancel) {
                 try {
                     activeRenderTask.current.cancel();
-                } catch {}
+                } catch (cancelError) {
+                    debug("render: cleanup cancel error", cancelError);
+                }
             }
         };
-    }, [pdfData, currentPage, scale, totalPages]);
+    }, [pdfData, currentPage, scale, totalPages, renderSnippets, onReady]);
 
     useEffect(() => {
         let animationFrameId = requestAnimationFrame(() => {
@@ -508,14 +533,7 @@ export default function BoxCutter({
         });
 
         return () => cancelAnimationFrame(animationFrameId);
-    }, [
-        controlledSnippets,
-        currentPage,
-        selection,
-        multiselection,
-        scale,
-        hoveredSelection,
-    ]);
+    }, [renderSnippets]);
 
     useEffect(() => {
         let handleKeyUp = () => {
@@ -532,7 +550,7 @@ export default function BoxCutter({
         return () => {
             window.removeEventListener("keyup", handleKeyUp);
         };
-    }, [multiselection]);
+    }, [multiselection, extractCombinedSnippet]);
 
     // Snippets are controlled; no internal state sync needed.
 
@@ -541,12 +559,12 @@ export default function BoxCutter({
             debug("toc: sync outward", { count: contents.length });
             onTOCChange(contents);
         }
-    }, [contents]);
+    }, [contents, toc, onTOCChange]);
 
     useEffect(() => {
         debug("page: change", { currentPage });
         onPageChange(currentPage);
-    }, [currentPage]);
+    }, [currentPage, onPageChange]);
 
     // Keep internal page in sync with controlled `page` prop
     useEffect(() => {
@@ -559,7 +577,7 @@ export default function BoxCutter({
                 setCurrentPage(next);
             }
         }
-    }, [page, totalPages]);
+    }, [page, totalPages, currentPage]);
 
     let handleExtractOutline = async (maxDepth = 1) => {
         const outline = await pdfData.getOutline();

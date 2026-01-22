@@ -12,23 +12,22 @@ function App() {
 
     // Initialize saved theme
     useEffect(() => {
-        try {
-            const saved = localStorage.getItem("theme");
-            if (saved === "dark") {
-                document.documentElement.classList.add("dark");
-            }
-        } catch {}
+        if (typeof window === "undefined" || typeof document === "undefined") {
+            return;
+        }
+        const saved = window.localStorage?.getItem("theme");
+        if (saved === "dark") {
+            document.documentElement.classList.add("dark");
+        }
     }, []);
 
     // Initialize pdf.js worker from public URL so getDocument can run
     useEffect(() => {
         const worker = initPdfjsWorker({ url: "/pdf.worker.min.mjs" });
         return () => {
-            try {
-                if (worker && typeof worker.terminate === "function") {
-                    worker.terminate();
-                }
-            } catch {}
+            if (worker && typeof worker.terminate === "function") {
+                worker.terminate();
+            }
         };
     }, []);
 
@@ -50,13 +49,14 @@ function App() {
                     <button
                         className="px-3 py-1 border border-input rounded bg-background hover:bg-accent hover:text-accent-foreground"
                         onClick={() => {
+                            if (typeof document === "undefined") return;
                             const root = document.documentElement;
                             const next = root.classList.toggle("dark")
                                 ? "dark"
                                 : "light";
-                            try {
-                                localStorage.setItem("theme", next);
-                            } catch {}
+                            if (typeof window !== "undefined") {
+                                window.localStorage?.setItem("theme", next);
+                            }
                         }}
                     >
                         Toggle theme
