@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import * as pdfjsLib from "pdfjs-dist";
 
 // Note: We no longer create a Worker via a bundled asset here because

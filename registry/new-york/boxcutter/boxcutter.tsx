@@ -1,16 +1,19 @@
+"use client";
+// @ts-nocheck
+
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import { v4 } from "uuid";
-import React, { useRef, useState, useEffect } from "react";
 import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
-} from "../../../components/ui/card";
-import { Button } from "../../../components/ui/button";
-import { Slider } from "../../../components/ui/slider";
-import { Input } from "../../../components/ui/input";
-import { Badge } from "../../../components/ui/badge";
-import { deepEquals } from "./utils/helpers";
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { deepEquals } from "@/lib/boxcutter/utils/helpers";
 
 const BTNRADIUS = 8;
 
@@ -27,7 +30,6 @@ import {
     Scissors,
     Trash,
 } from "lucide-react";
-import { useCallback } from "react";
 
 export default function BoxCutter({
     pdf = null,
@@ -343,7 +345,9 @@ export default function BoxCutter({
             setPdfData(null);
             try {
                 // Dynamically import pdfjs to avoid SSR/window issues
-                const { pdfjsLib } = await import("./utils/pdfjs");
+                const { pdfjsLib } = await import(
+                    "@/lib/boxcutter/utils/pdfjs"
+                );
                 debug("loadPDF: pdfjs imported", {
                     workerSrc: pdfjsLib.GlobalWorkerOptions?.workerSrc,
                 });

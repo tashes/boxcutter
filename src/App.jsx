@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { initPdfjsWorker } from "./components/boxcutter/utils/pdfjs";
 
 import BoxCutter from "./components/boxcutter";
 
@@ -19,9 +20,22 @@ function App() {
         } catch {}
     }, []);
 
+    // Initialize pdf.js worker from public URL so getDocument can run
+    useEffect(() => {
+        const worker = initPdfjsWorker({ url: "/pdf.worker.min.mjs" });
+        return () => {
+            try {
+                if (worker && typeof worker.terminate === "function") {
+                    worker.terminate();
+                }
+            } catch {}
+        };
+    }, []);
+
     useEffect(() => {
         let loadPdf = async () => {
-            let data = await fetch("/example.pdf").then((r) => r.bytes());
+            const resp = await fetch("/example.pdf");
+            const data = await resp.arrayBuffer();
             setPdf(data);
         };
 
@@ -87,19 +101,8 @@ function App() {
                         toc={toc}
                         onTOCChange={setTOC}
                         onPageChange={(p) => setPage(p)}
-                        onReady={({ totalPages, currentPage, scale, pageSize, jumpToPage }) => {
-                            // Demonstrate using onReady details and helper
-                            console.log("onReady:", {
-                                totalPages,
-                                currentPage,
-                                scale,
-                                pageSize,
-                            });
-
-                            // Example: jump to page 3 if available
-                            if (totalPages >= 3) {
-                                jumpToPage(3);
-                            }
+                        onReady={({ totalPages, jumpToPage }) => {
+                            if (totalPages >= 3) jumpToPage(3);
                         }}
                         showSnippetsCollection={true}
                     />

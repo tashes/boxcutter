@@ -1,0 +1,43 @@
+{
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "boxcutter",
+    "homepage": "https://github.com/tashes/boxcutter",
+    "items": [
+        {
+            "name": "boxcutter",
+            "type": "registry:block",
+            "title": "BoxCutter",
+            "description": "Interactive PDF snipping surface with bookmarks, outline extraction, and snippet management.",
+            "registryDependencies": [
+                "button",
+                "badge",
+                "card",
+                "input",
+                "slider"
+            ],
+            "dependencies": [
+                "uuid@^11.1.0",
+                "lucide-react@^0.525.0",
+                "pdfjs-dist@^5.3.31"
+            ],
+            "files": [
+                {
+                    "path": "registry/new-york/boxcutter/boxcutter.tsx",
+                    "type": "registry:component",
+                    "target": "components/boxcutter.tsx"
+                },
+                {
+                    "path": "registry/new-york/boxcutter/utils/helpers.ts",
+                    "type": "registry:lib",
+                    "target": "lib/boxcutter/utils/helpers.ts"
+                },
+                {
+                    "path": "registry/new-york/boxcutter/utils/pdfjs.ts",
+                    "type": "registry:lib",
+                    "target": "lib/boxcutter/utils/pdfjs.ts"
+                }
+            ],
+            "docs": "After installing, import the component from '@/components/boxcutter' (or your alias), include '@tamatashwin/boxcutter/styles.css' if you rely on the package tokens, and call initPdfjsWorker from '@/lib/boxcutter/utils/pdfjs' (or wherever the helper lands) to point pdf.js at a worker URL before rendering."
+        }
+    ]
+}

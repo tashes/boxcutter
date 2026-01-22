@@ -39,7 +39,8 @@ function App() {
 
   useEffect(() => {
     let loadPdf = async () => {
-      let data = await fetch("/example.pdf").then((r) => r.bytes());
+      // Convert the Response to bytes; browsers expose arrayBuffer()
+      const data = await fetch("/example.pdf").then((r) => r.arrayBuffer());
       setPdf(data);
     };
 
@@ -124,6 +125,82 @@ module.exports = nextConfig;
 ```
 
 If you accidentally import `@tamatashwin/boxcutter` in a Server Component, you’ll see a helpful error directing you to use the `/client` subpath instead.
+
+### Configure the pdf.js worker (Next.js)
+
+Next.js’ server build can’t resolve relative asset imports from libraries. To avoid worker resolution errors like:
+
+> Module not found: Can't resolve './assets/pdf.worker.min-*.js'
+
+configure the pdf.js worker on the client by pointing to a public URL in your app:
+
+1) Copy the worker to `public` (once):
+
+```bash
+cp node_modules/pdfjs-dist/build/pdf.worker.min.mjs public/
+```
+
+2) Initialize the worker in a client entry before rendering BoxCutter:
+
+```tsx
+// app/providers.tsx (client component), or your top-level client page/component
+"use client";
+import { useEffect } from "react";
+import { initPdfjsWorker } from "@tamatashwin/boxcutter/client";
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    // Tell pdf.js where to load the worker from (public URL)
+    initPdfjsWorker({ url: "/pdf.worker.min.mjs" });
+  }, []);
+  return <>{children}</>;
+}
+```
+
+Alternatively, you may set it directly via pdf.js APIs:
+
+```tsx
+import * as pdfjsLib from "pdfjs-dist";
+pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+```
+
+This avoids bundling the worker file from the package and prevents Next.js from trying to resolve a relative asset at build time.
+
+## shadcn/ui Registry
+
+Boxcutter is published as a custom registry item so you can pull it straight into any project that uses the shadcn CLI.
+
+1. Add the namespace to your `components.json`:
+
+    ```jsonc
+    {
+      "registries": {
+        "@boxcutter": "https://raw.githubusercontent.com/tashes/boxcutter/main/r/{name}.json"
+      }
+    }
+    ```
+
+2. Install the component:
+
+    ```bash
+    npx shadcn@latest add @boxcutter/boxcutter
+    ```
+
+   You can also point directly at the registry manifest if you prefer:
+
+    ```bash
+    npx shadcn@latest add boxcutter --registry https://raw.githubusercontent.com/tashes/boxcutter/main/registry.json
+    ```
+
+3. After installation, import the component from your `@/components` alias, pull helpers from `@/lib/boxcutter/utils`, and configure the pdf.js worker:
+
+    ```tsx
+    import { initPdfjsWorker } from "@/lib/boxcutter/utils/pdfjs";
+
+    initPdfjsWorker({ url: "/pdf.worker.min.mjs" });
+    ```
+
+   Include `@tamatashwin/boxcutter/styles.css` if you rely on the package tokens.
 
 ## Dark Mode
 
